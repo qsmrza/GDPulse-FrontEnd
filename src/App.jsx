@@ -5,6 +5,7 @@ import GDPChart from './components/GDPChart';
 import IndicatorsGrid from './components/IndicatorsGrid';
 import ModelMetrics from './components/ModelMetrics';
 import Footer from './components/Footer';
+import TestApiCall from './components/TestApiCall'
 import { TrendingUp, Activity, BarChart3, RefreshCw } from 'lucide-react';
 import {
   getGDPHistoricalData,
@@ -79,6 +80,7 @@ function App() {
                 <div className="last-updated">
                   Last updated: {lastUpdated.toLocaleTimeString()}
                 </div>
+                <TestApiCall />
               </div>
             </div>
           </section>
