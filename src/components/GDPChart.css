@@ -44,6 +44,18 @@
   background: var(--warning-color);
 }
 
+.legend-dot.prediction {
+  background: #3b82f6;
+}
+
+.legend-dot.confidence {
+  background: #93c5fd;
+}
+
+.legend-dot.actual {
+  background: #dc2626;
+}
+
 .custom-tooltip {
   background: var(--surface);
   border: 1px solid var(--border-color);

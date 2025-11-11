@@ -6,10 +6,13 @@ import IndicatorsGrid from './components/IndicatorsGrid';
 import ModelMetrics from './components/ModelMetrics';
 import Footer from './components/Footer';
 import TestApiCall from './components/TestApiCall'
-import { TrendingUp, Activity, BarChart3, RefreshCw } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, RefreshCw, AlertCircle } from 'lucide-react';
 import {
-  getGDPHistoricalData,
-  getCurrentPrediction,
+  getAllPredictions,
+  transformPredictionsToChartData,
+  checkHealth
+} from './services/apiService';
+import {
   getEconomicIndicators,
   getFeatureImportance,
   getModelMetrics
@@ -18,31 +21,55 @@ import './App.css';
 
 function App() {
   const [gdpData, setGdpData] = useState([]);
-  const [currentPrediction, setCurrentPrediction] = useState(null);
+  const [predictions, setPredictions] = useState([]);
   const [indicators, setIndicators] = useState([]);
   const [featureImportance, setFeatureImportance] = useState([]);
   const [modelMetrics, setModelMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [backendHealthy, setBackendHealthy] = useState(false);
 
-  // Simulated data loading
+  // Load data on mount
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     setLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      setGdpData(getGDPHistoricalData());
-      setCurrentPrediction(getCurrentPrediction());
+    setError(null);
+
+    try {
+      // Check backend health
+      await checkHealth();
+      setBackendHealthy(true);
+
+      // Fetch all predictions from backend
+      const allPredictions = await getAllPredictions();
+
+      // Transform predictions for chart display
+      const chartData = transformPredictionsToChartData(allPredictions);
+      setGdpData(chartData);
+      setPredictions(allPredictions.predictions);
+
+      // Load mock data for indicators and metrics
       setIndicators(getEconomicIndicators());
       setFeatureImportance(getFeatureImportance());
       setModelMetrics(getModelMetrics());
+
       setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError('Failed to connect to backend API. Make sure the backend server is running on port 8000.');
+      setBackendHealthy(false);
+
+      // Fall back to showing mock data if available
+      setIndicators(getEconomicIndicators());
+      setFeatureImportance(getFeatureImportance());
+      setModelMetrics(getModelMetrics());
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleRefresh = () => {
@@ -59,12 +86,32 @@ function App() {
     );
   }
 
+  const primaryPrediction = predictions.length > 0 ? predictions[0] : null;
+
   return (
     <div className="app">
       <Header />
-      
+
       <main className="main-content">
         <div className="container">
+          {/* Error Alert */}
+          {error && (
+            <div className="error-alert">
+              <AlertCircle size={20} />
+              <div>
+                <strong>Connection Error</strong>
+                <p>{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Health Status */}
+          {backendHealthy && (
+            <div className="health-badge" style={{ marginBottom: '1rem', textAlign: 'center', color: '#10b981', fontSize: '0.875rem' }}>
+              ✓ Backend Connected - Real-time predictions active
+            </div>
+          )}
+
           {/* Hero Section */}
           <section className="hero-section">
             <div className="hero-content">
@@ -86,34 +133,36 @@ function App() {
           </section>
 
           {/* Current Prediction Cards */}
-          <section className="metrics-section">
-            <div className="grid grid-3">
-              <MetricCard
-                title="Current GDP Forecast"
-                value={currentPrediction.currentGDP}
-                unit="%"
-                change={currentPrediction.changePercent}
-                subtitle={`Predicted for ${currentPrediction.quarterLabel}`}
-                icon={TrendingUp}
-              />
-              <MetricCard
-                title="Model R² Score"
-                value={currentPrediction.rSquared}
-                unit=""
-                change={8.5}
-                subtitle="Prediction accuracy measure"
-                icon={BarChart3}
-              />
-              <MetricCard
-                title="Prediction RMSE"
-                value={currentPrediction.rmse}
-                unit=""
-                change={-5.2}
-                subtitle="Root mean square error"
-                icon={Activity}
-              />
-            </div>
-          </section>
+          {primaryPrediction && (
+            <section className="metrics-section">
+              <div className="grid grid-3">
+                <MetricCard
+                  title="GDP Nowcast (h1)"
+                  value={primaryPrediction.prediction.toFixed(2)}
+                  unit="(thousands)"
+                  change={0}
+                  subtitle={`Date: ${new Date(primaryPrediction.date).toLocaleDateString()}`}
+                  icon={TrendingUp}
+                />
+                <MetricCard
+                  title="Lower Bound (95%)"
+                  value={primaryPrediction.confidence_interval.lower.toFixed(2)}
+                  unit="(thousands)"
+                  change={-2.5}
+                  subtitle="Confidence interval lower"
+                  icon={BarChart3}
+                />
+                <MetricCard
+                  title="Upper Bound (95%)"
+                  value={primaryPrediction.confidence_interval.upper.toFixed(2)}
+                  unit="(thousands)"
+                  change={2.5}
+                  subtitle="Confidence interval upper"
+                  icon={Activity}
+                />
+              </div>
+            </section>
+          )}
 
           {/* GDP Chart */}
           <section className="chart-section">
