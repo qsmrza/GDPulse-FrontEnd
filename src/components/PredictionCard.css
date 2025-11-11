@@ -1,0 +1,149 @@
+.prediction-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.prediction-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.prediction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.prediction-label {
+  flex: 1;
+}
+
+.prediction-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.prediction-description {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.trend-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.trend-indicator.positive {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.trend-indicator.negative {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.trend-text {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.prediction-values {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--background);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.value-row.difference {
+  border-left: 4px solid var(--primary-color);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.value-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.value-amount {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.value-amount.actual {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.prediction-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.8125rem;
+}
+
+.date-text {
+  color: var(--text-secondary);
+}
+
+.cached-badge {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .prediction-card {
+    padding: 1rem;
+  }
+
+  .prediction-header {
+    flex-direction: column;
+  }
+
+  .trend-indicator {
+    align-self: flex-start;
+  }
+
+  .value-row {
+    font-size: 0.875rem;
+  }
+
+  .value-amount {
+    font-size: 0.9375rem;
+  }
+}

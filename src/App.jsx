@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
-import MetricCard from './components/MetricCard';
+import PredictionCard from './components/PredictionCard';
 import GDPChart from './components/GDPChart';
 import IndicatorsGrid from './components/IndicatorsGrid';
 import ModelMetrics from './components/ModelMetrics';
 import Footer from './components/Footer';
 import TestApiCall from './components/TestApiCall'
-import { TrendingUp, Activity, BarChart3, RefreshCw, AlertCircle } from 'lucide-react';
+import { Activity, RefreshCw, AlertCircle } from 'lucide-react';
 import {
   getAllPredictions,
   transformPredictionsToChartData,
@@ -132,34 +132,18 @@ function App() {
             </div>
           </section>
 
-          {/* Current Prediction Cards */}
-          {primaryPrediction && (
-            <section className="metrics-section">
-              <div className="grid grid-3">
-                <MetricCard
-                  title="GDP Nowcast (h1)"
-                  value={primaryPrediction.prediction.toFixed(2)}
-                  unit="(thousands)"
-                  change={0}
-                  subtitle={`Date: ${new Date(primaryPrediction.date).toLocaleDateString()}`}
-                  icon={TrendingUp}
-                />
-                <MetricCard
-                  title="Lower Bound (95%)"
-                  value={primaryPrediction.confidence_interval.lower.toFixed(2)}
-                  unit="(thousands)"
-                  change={-2.5}
-                  subtitle="Confidence interval lower"
-                  icon={BarChart3}
-                />
-                <MetricCard
-                  title="Upper Bound (95%)"
-                  value={primaryPrediction.confidence_interval.upper.toFixed(2)}
-                  unit="(thousands)"
-                  change={2.5}
-                  subtitle="Confidence interval upper"
-                  icon={Activity}
-                />
+          {/* Prediction Cards - Show all 4 models */}
+          {predictions && predictions.length > 0 && (
+            <section className="predictions-section">
+              <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: '600' }}>Model Predictions</h2>
+              <div className="grid grid-4">
+                {predictions.map((prediction, index) => (
+                  <PredictionCard
+                    key={index}
+                    prediction={prediction}
+                    actualGdp={prediction.actual_gdp}
+                  />
+                ))}
               </div>
             </section>
           )}
