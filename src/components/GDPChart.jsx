@@ -1,5 +1,5 @@
 import React from 'react';
-import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart } from 'recharts';
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, ReferenceLine } from 'recharts';
 import './GDPChart.css';
 
 const GDPChart = ({ data }) => {
@@ -8,7 +8,7 @@ const GDPChart = ({ data }) => {
     return (
       <div className="gdp-chart-container card">
         <div className="chart-header">
-          <h2 className="chart-title">GDP Predictions vs Actual</h2>
+          <h2 className="chart-title">GDP Predictions vs Historical Data</h2>
         </div>
         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
           No prediction data available. Please check that the backend is running.
@@ -17,30 +17,29 @@ const GDPChart = ({ data }) => {
     );
   }
 
-  // Format values to billions for the chart
-  const chartData = data.map(item => ({
-    ...item,
-    predictionBillions: item.prediction / 1000,
-    actualBillions: item.actual / 1000,
-  }));
+  // Find the current quarter marker (today/now line)
+  const currentQuarterIndex = data.findIndex(item => item.isCurrentQuarter);
+  const currentQuarterDate = currentQuarterIndex !== -1 ? data[currentQuarterIndex].date : null;
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const item = payload[0].payload;
       return (
         <div className="custom-tooltip">
-          <p className="tooltip-label">{data.name}</p>
-          <p className="tooltip-value">
-            Prediction: ${(data.prediction / 1000).toFixed(2)}B
-          </p>
-          {data.actual !== null && (
-            <p className="tooltip-actual" style={{ color: '#dc2626', fontWeight: 'bold', fontSize: '1rem' }}>
-              Actual GDP: ${(data.actual / 1000).toFixed(2)}B
+          <p className="tooltip-label">{item.displayDate || item.modelName || 'Data Point'}</p>
+          {item.actual !== undefined && (
+            <p className="tooltip-actual" style={{ color: '#dc2626', fontWeight: 'bold' }}>
+              Actual GDP: ${item.actual.toFixed(2)}B
             </p>
           )}
-          {data.date && (
+          {item.prediction !== undefined && (
+            <p className="tooltip-value">
+              Predicted GDP: ${item.prediction.toFixed(2)}B
+            </p>
+          )}
+          {item.date && (
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-              {new Date(data.date).toLocaleDateString()}
+              {new Date(item.date).toLocaleDateString()}
             </p>
           )}
         </div>
@@ -52,27 +51,30 @@ const GDPChart = ({ data }) => {
   return (
     <div className="gdp-chart-container card">
       <div className="chart-header">
-        <h2 className="chart-title">GDP Predictions vs Actual</h2>
+        <h2 className="chart-title">GDP Predictions vs Historical Data</h2>
         <div className="chart-legend-custom">
           <div className="legend-item">
-            <div className="legend-dot prediction"></div>
-            <span>Prediction</span>
+            <div className="legend-dot actual"></div>
+            <span>Actual GDP (Past 4 Quarters)</span>
           </div>
           <div className="legend-item">
-            <div className="legend-dot actual"></div>
-            <span>Actual GDP</span>
+            <div className="legend-dot prediction"></div>
+            <span>Model Predictions (Future)</span>
+          </div>
+          <div className="legend-item" style={{ borderLeft: '3px dashed #999' }}>
+            <span style={{ marginLeft: '0.5rem' }}>Current Quarter</span>
           </div>
         </div>
       </div>
 
       <ResponsiveContainer width="100%" height={400}>
         <LineChart
-          data={chartData}
+          data={data}
           margin={{ top: 20, right: 30, left: 10, bottom: 60 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis
-            dataKey="name"
+            dataKey="displayDate"
             angle={-45}
             textAnchor="end"
             height={80}
@@ -86,27 +88,38 @@ const GDPChart = ({ data }) => {
           />
           <Tooltip content={<CustomTooltip />} />
 
-          {/* Prediction Line */}
+          {/* Reference line for current quarter */}
+          {currentQuarterDate && (
+            <ReferenceLine
+              x={currentQuarterDate}
+              stroke="#999999"
+              strokeDasharray="5 5"
+              label={{ value: 'Today', position: 'top', fill: '#666', fontSize: 12 }}
+            />
+          )}
+
+          {/* Actual GDP Line (Historical) */}
           <Line
             type="monotone"
-            dataKey="predictionBillions"
-            stroke="#3b82f6"
-            strokeWidth={3}
-            dot={{ fill: '#3b82f6', r: 5 }}
-            activeDot={{ r: 7 }}
-            name="Prediction"
+            dataKey="actual"
+            stroke="#dc2626"
+            strokeWidth={4}
+            dot={{ fill: '#dc2626', r: 6, strokeWidth: 2, stroke: 'white' }}
+            activeDot={{ r: 8, strokeWidth: 2 }}
+            name="Actual GDP"
             isAnimationActive={false}
           />
 
-          {/* Actual GDP Line */}
+          {/* Predictions Line (Future) */}
           <Line
             type="monotone"
-            dataKey="actualBillions"
-            stroke="#dc2626"
-            strokeWidth={4}
-            dot={{ fill: '#dc2626', r: 8, strokeWidth: 2, stroke: 'white' }}
-            activeDot={{ r: 10, strokeWidth: 2 }}
-            name="Actual GDP"
+            dataKey="prediction"
+            stroke="#3b82f6"
+            strokeWidth={3}
+            strokeDasharray="8 4"
+            dot={{ fill: '#3b82f6', r: 6 }}
+            activeDot={{ r: 8 }}
+            name="Predictions"
             isAnimationActive={false}
           />
         </LineChart>
@@ -114,7 +127,7 @@ const GDPChart = ({ data }) => {
 
       <div className="chart-info">
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
-          Comparing predictions from different forecasting horizons against actual GDP values. Blue line shows model predictions, red line shows actual GDP.
+          Red solid line shows actual GDP over the past 4 quarters. Blue dashed line shows model predictions for future quarters (Nowcast, H1, H2, H3). Vertical dashed line marks the current quarter.
         </p>
       </div>
     </div>

@@ -84,6 +84,27 @@ export const checkHealth = async () => {
 };
 
 /**
+ * Get historical GDP data for a model
+ * @param {string} modelName - Model name
+ * @param {number} quarters - Number of quarters to retrieve (default 4)
+ */
+export const getHistoricalData = async (modelName, quarters = 4) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/history/${modelName}?quarters=${quarters}`);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching history for ${modelName}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Get list of available models
  */
 export const getAvailableModels = async () => {
