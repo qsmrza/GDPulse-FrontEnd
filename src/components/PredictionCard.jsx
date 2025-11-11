@@ -13,12 +13,36 @@ const PredictionCard = ({ prediction, actualGdp }) => {
     return (value / 1000).toFixed(2);
   };
 
+  // Calculate forecast date based on model type
+  const getDateLabel = () => {
+    const baseDate = new Date(prediction.date);
+
+    switch(prediction.model_name) {
+      case 'nowcasting_h1':
+        return `Nowcast (Today)`;
+      case 'forecasting_h1':
+        const h1Date = new Date(baseDate);
+        h1Date.setDate(h1Date.getDate() + 90);
+        return `H1: ${h1Date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+      case 'forecasting_h2':
+        const h2Date = new Date(baseDate);
+        h2Date.setDate(h2Date.getDate() + 180);
+        return `H2: ${h2Date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+      case 'forecasting_h3':
+        const h3Date = new Date(baseDate);
+        h3Date.setDate(h3Date.getDate() + 270);
+        return `H3: ${h3Date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+      default:
+        return prediction.date;
+    }
+  };
+
   // Get model details
   const modelLabels = {
-    'nowcasting_h1': { label: 'Nowcast (H1)', description: 'Current Period' },
-    'forecasting_h1': { label: 'Forecast (H1)', description: '1 Quarter Ahead' },
-    'forecasting_h2': { label: 'Forecast (H2)', description: '2 Quarters Ahead' },
-    'forecasting_h3': { label: 'Forecast (H3)', description: '3 Quarters Ahead' },
+    'nowcasting_h1': { label: 'Nowcast', description: 'Current Period' },
+    'forecasting_h1': { label: 'Forecast H1', description: '1 Quarter Ahead' },
+    'forecasting_h2': { label: 'Forecast H2', description: '2 Quarters Ahead' },
+    'forecasting_h3': { label: 'Forecast H3', description: '3 Quarters Ahead' },
   };
 
   const modelInfo = modelLabels[prediction.model_name] || {
@@ -60,11 +84,7 @@ const PredictionCard = ({ prediction, actualGdp }) => {
 
       <div className="prediction-footer">
         <small className="date-text">
-          {new Date(prediction.date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          })}
+          {getDateLabel()}
         </small>
         {prediction.cached && <span className="cached-badge">Cached</span>}
       </div>
