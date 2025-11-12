@@ -23,6 +23,7 @@ import './App.css';
 function App() {
   const [gdpData, setGdpData] = useState([]);
   const [historicalData, setHistoricalData] = useState([]);
+  const [nowcastingHistory, setNowcastingHistory] = useState([]);
   const [predictions, setPredictions] = useState([]);
   const [indicators, setIndicators] = useState([]);
   const [featureImportance, setFeatureImportance] = useState([]);
@@ -54,8 +55,12 @@ function App() {
       const history = await getHistoricalData('forecasting_h1', 4);
       setHistoricalData(history.historical_data);
 
+      // Fetch nowcasting model historical predictions to compare with actual GDP
+      const nowcasting = await getHistoricalData('nowcasting_h1', 4);
+      setNowcastingHistory(nowcasting.historical_data);
+
       // Transform predictions and historical data for chart display
-      const chartData = buildChartData(allPredictions.predictions, history.historical_data);
+      const chartData = buildChartData(allPredictions.predictions, history.historical_data, nowcasting.historical_data);
       setGdpData(chartData);
 
       // Load mock data for indicators and metrics
@@ -78,34 +83,95 @@ function App() {
     }
   };
 
-  // Build chart data combining historical and predicted data
-  const buildChartData = (predictions, historicalData) => {
+  // Build chart data combining historical, nowcasting, and predicted data
+  const buildChartData = (predictions, historicalData, nowcastingData) => {
     const chartData = [];
 
-    // Add historical data points
+    // Aggregate daily historical data into quarterly data
     if (historicalData && historicalData.length > 0) {
-      historicalData.forEach(item => {
+      const quarterlyData = [];
+      let currentQuarter = [];
+      let quarterStartDate = null;
+
+      historicalData.forEach((item, index) => {
+        if (currentQuarter.length === 0) {
+          quarterStartDate = item.date;
+        }
+        currentQuarter.push(item.gdp);
+
+        // Every 90 days = 1 quarter (or end of data)
+        if (currentQuarter.length === 90 || index === historicalData.length - 1) {
+          // Average the GDP values for the quarter
+          const avgGdp = currentQuarter.reduce((a, b) => a + b, 0) / currentQuarter.length;
+          const quarterEndDate = historicalData[Math.min(index, historicalData.length - 1)].date;
+
+          // Also aggregate nowcasting data for this same quarter
+          let nowcastingAvg = null;
+          if (nowcastingData && nowcastingData.length > 0) {
+            const startIdx = Math.max(0, index - currentQuarter.length + 1);
+            const endIdx = Math.min(index, nowcastingData.length - 1);
+            if (startIdx <= endIdx) {
+              const nowcastingValues = nowcastingData.slice(startIdx, endIdx + 1).map(d => d.gdp);
+              nowcastingAvg = nowcastingValues.reduce((a, b) => a + b, 0) / nowcastingValues.length;
+            }
+          }
+
+          quarterlyData.push({
+            date: quarterEndDate,
+            actual: avgGdp / 1000, // Convert to billions
+            nowcasting: nowcastingAvg ? nowcastingAvg / 1000 : null, // Nowcasting prediction for this quarter
+            displayDate: new Date(quarterEndDate).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+            isHistorical: true,
+            isCurrentQuarter: index === historicalData.length - 1, // Last quarter is current
+          });
+
+          currentQuarter = [];
+        }
+      });
+
+      // Add quarterly data to chart
+      quarterlyData.forEach((item, index) => {
         chartData.push({
-          date: item.date,
-          actual: item.gdp / 1000, // Convert to billions
-          displayDate: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          isHistorical: true,
-          isCurrentQuarter: false,
+          ...item,
+          isCurrentQuarter: index === quarterlyData.length - 1, // Mark last quarter as current
         });
       });
-    }
 
-    // Add current quarter marker (last historical date)
-    if (historicalData && historicalData.length > 0) {
-      const lastDate = new Date(historicalData[historicalData.length - 1].date);
-      chartData.push({
-        date: lastDate.toISOString().split('T')[0],
-        actual: historicalData[historicalData.length - 1].gdp / 1000,
-        displayDate: 'Today',
-        isHistorical: true,
-        isCurrentQuarter: true, // Mark for dotted line
-        isDottedLine: true,
-      });
+      // If nowcasting data has actual_gdp field, use it for the actual line
+      if (nowcastingData && nowcastingData.length > 0 && nowcastingData[0].actual_gdp !== undefined) {
+        // Update the actual GDP from nowcasting data instead
+        const quarterlyActualData = [];
+        let currentQuarter = [];
+
+        nowcastingData.forEach((item, index) => {
+          if (currentQuarter.length === 0) {
+            quarterStartDate = item.date;
+          }
+          currentQuarter.push(item.actual_gdp);
+
+          // Every 90 days = 1 quarter (or end of data)
+          if (currentQuarter.length === 90 || index === nowcastingData.length - 1) {
+            // Average the actual GDP values for the quarter
+            const avgActualGdp = currentQuarter.reduce((a, b) => a + b, 0) / currentQuarter.length;
+            const quarterEndDate = nowcastingData[Math.min(index, nowcastingData.length - 1)].date;
+
+            quarterlyActualData.push({
+              date: quarterEndDate,
+              actual: avgActualGdp / 1000, // Convert to billions
+              displayDate: new Date(quarterEndDate).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+            });
+
+            currentQuarter = [];
+          }
+        });
+
+        // Replace actual GDP values in chartData with properly aggregated values
+        chartData.forEach((point, idx) => {
+          if (quarterlyActualData[idx]) {
+            point.actual = quarterlyActualData[idx].actual;
+          }
+        });
+      }
     }
 
     // Add predictions with forward dates

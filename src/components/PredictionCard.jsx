@@ -3,10 +3,9 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import './PredictionCard.css';
 
 const PredictionCard = ({ prediction, actualGdp }) => {
-  // Calculate trend (actual vs prediction)
-  const isPositive = actualGdp >= prediction.prediction;
-  const difference = actualGdp - prediction.prediction;
-  const percentDifference = ((difference / prediction.prediction) * 100).toFixed(1);
+  // Since these are future predictions, we don't show trend comparison
+  // Just display the prediction value
+  const predictionInBillions = prediction.prediction / 1000;
 
   // Format value to billions (divide thousands by 1000)
   const formatToBillions = (value) => {
@@ -57,28 +56,15 @@ const PredictionCard = ({ prediction, actualGdp }) => {
           <h3 className="prediction-title">{modelInfo.label}</h3>
           <p className="prediction-description">{modelInfo.description}</p>
         </div>
-        <div className={`trend-indicator ${isPositive ? 'positive' : 'negative'}`}>
-          {isPositive ? (
-            <TrendingUp size={24} />
-          ) : (
-            <TrendingDown size={24} />
-          )}
-          <span className="trend-text">{isPositive ? '+' : ''}{percentDifference}%</span>
+        <div className="prediction-icon">
+          <span className="forecast-badge">Forecast</span>
         </div>
       </div>
 
       <div className="prediction-values">
-        <div className="value-row">
-          <span className="value-label">Prediction</span>
+        <div className="value-row primary">
+          <span className="value-label">Predicted GDP</span>
           <span className="value-amount">${formatToBillions(prediction.prediction)}B</span>
-        </div>
-        <div className="value-row">
-          <span className="value-label">Actual GDP</span>
-          <span className="value-amount actual">${formatToBillions(actualGdp)}B</span>
-        </div>
-        <div className="value-row difference">
-          <span className="value-label">Difference</span>
-          <span className="value-amount">${formatToBillions(Math.abs(difference))}B</span>
         </div>
       </div>
 
