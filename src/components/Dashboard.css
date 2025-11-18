@@ -1,18 +1,3 @@
-.dashboard-header-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.dashboard-header-controls .hero-title {
-  margin-bottom: 0;
-  flex: 1;
-  min-width: 0;
-}
-
 .country-selector-wrapper {
   display: flex;
   align-items: center;
@@ -22,6 +7,8 @@
   border-radius: 8px;
   padding: 0.5rem 1rem;
   transition: all 0.2s;
+  margin: 1.5rem auto;
+  width: fit-content;
 }
 
 .country-selector-wrapper:hover {
@@ -53,18 +40,9 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-header-controls {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .hero-title {
-    width: 100%;
-  }
-
   .country-selector-wrapper {
     width: 100%;
+    max-width: 300px;
   }
 
   .country-selector {

@@ -9,9 +9,9 @@
 
 .header-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.5rem 0;
 }
 
 .logo-section {

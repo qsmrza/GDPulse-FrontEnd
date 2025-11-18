@@ -1,0 +1,53 @@
+.floating-logo {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 1000;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
+
+.floating-logo:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+  box-shadow: var(--shadow-lg);
+}
+
+.floating-logo:active {
+  transform: scale(0.98);
+}
+
+.floating-logo-img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 768px) {
+  .floating-logo {
+    top: 1rem;
+    left: 1rem;
+    padding: 0.5rem;
+  }
+
+  .floating-logo-img {
+    width: 32px;
+    height: 32px;
+  }
+}
+

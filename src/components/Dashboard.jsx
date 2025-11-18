@@ -5,6 +5,7 @@ import GDPChart from './GDPChart';
 import IndicatorsGrid from './IndicatorsGrid';
 import ModelMetrics from './ModelMetrics';
 import TestApiCall from './TestApiCall';
+import TableOfContents from './TableOfContents';
 import { TrendingUp, Activity, BarChart3, RefreshCw, Globe } from 'lucide-react';
 import {
   getGDPHistoricalData,
@@ -90,30 +91,29 @@ const Dashboard = () => {
 
   return (
     <main className="main-content">
+      <TableOfContents />
       <div className="container">
         {/* Hero Section */}
-        <section className="hero-section">
+        <section className="hero-section" id="hero">
           <div className="hero-content">
-            <div className="dashboard-header-controls">
-              <h1 className="hero-title">{countryName} - Real-Time GDP Nowcasting</h1>
-              <div className="country-selector-wrapper">
-                <Globe className="country-selector-icon" size={18} />
-                <select 
-                  className="country-selector"
-                  value={countryCode || 'US'}
-                  onChange={handleCountryChange}
-                >
-                  {G7_COUNTRIES.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <h1 className="hero-title">{countryName} - Real-Time GDP Nowcasting</h1>
             <p className="hero-description">
               Machine learning-powered GDP predictions using high-frequency economic indicators from the Federal Reserve
             </p>
+            <div className="country-selector-wrapper">
+              <Globe className="country-selector-icon" size={18} />
+              <select 
+                className="country-selector"
+                value={countryCode || 'US'}
+                onChange={handleCountryChange}
+              >
+                {G7_COUNTRIES.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={handleRefresh}>
                 <RefreshCw size={16} />
@@ -128,7 +128,7 @@ const Dashboard = () => {
         </section>
 
         {/* Current Prediction Cards */}
-        <section className="metrics-section">
+        <section className="metrics-section" id="predictions">
           <div className="grid grid-3">
             <MetricCard
               title="Current GDP Forecast"
@@ -158,17 +158,17 @@ const Dashboard = () => {
         </section>
 
         {/* GDP Chart */}
-        <section className="chart-section">
+        <section className="chart-section" id="chart">
           <GDPChart data={gdpData} />
         </section>
 
         {/* Economic Indicators */}
-        <section>
+        <section id="indicators">
           <IndicatorsGrid indicators={indicators} />
         </section>
 
         {/* Model Performance */}
-        <section>
+        <section id="model-performance">
           <ModelMetrics 
             metrics={modelMetrics} 
             featureImportance={featureImportance} 

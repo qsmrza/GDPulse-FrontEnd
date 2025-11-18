@@ -117,10 +117,16 @@
 /* Sections */
 .metrics-section {
   margin-bottom: 2rem;
+  scroll-margin-top: 20px;
 }
 
 .chart-section {
   margin-bottom: 2rem;
+  scroll-margin-top: 20px;
+}
+
+section[id] {
+  scroll-margin-top: 20px;
 }
 
 /* Responsive Design */

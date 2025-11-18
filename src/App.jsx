@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
+import FloatingLogo from './components/FloatingLogo';
 import PredictionCard from './components/PredictionCard';
 import GDPChart from './components/GDPChart';
 import IndicatorsGrid from './components/IndicatorsGrid';
@@ -27,7 +27,7 @@ function App() {
   return (
     <Router>
       <div className="app">
-        <Header />
+        <FloatingLogo />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard/:countryCode" element={<Dashboard />} />

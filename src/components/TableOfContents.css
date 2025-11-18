@@ -1,0 +1,96 @@
+.table-of-contents {
+  position: fixed;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  z-index: 50;
+  min-width: 200px;
+  max-width: 250px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toc-header svg {
+  color: var(--primary-color);
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toc-list li {
+  margin: 0;
+}
+
+.toc-link {
+  width: 100%;
+  text-align: left;
+  padding: 0.625rem 0.875rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-family: inherit;
+  position: relative;
+}
+
+.toc-link:hover {
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+.toc-link.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.toc-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: white;
+  border-radius: 0 2px 2px 0;
+}
+
+@media (max-width: 1200px) {
+  .table-of-contents {
+    left: 1rem;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-of-contents {
+    display: none;
+  }
+}
+
