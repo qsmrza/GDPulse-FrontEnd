@@ -83,8 +83,7 @@
 
 @media (max-width: 1200px) {
   .table-of-contents {
-    left: 1rem;
-    min-width: 180px;
+    display: none; /* Hide TOC on medium and small screens to avoid overlap */
   }
 }
 

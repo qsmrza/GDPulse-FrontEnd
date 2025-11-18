@@ -3,7 +3,6 @@ import { List } from 'lucide-react';
 import './TableOfContents.css';
 
 const sections = [
-  { id: 'predictions', label: 'Current Predictions' },
   { id: 'chart', label: 'GDP Chart' },
   { id: 'indicators', label: 'Economic Indicators' },
   { id: 'model-performance', label: 'Model Performance' }

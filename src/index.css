@@ -49,6 +49,8 @@ code {
   padding: 0 1.5rem;
 }
 
+/* Container padding adjusted in App.css for main-content instead */
+
 .card {
   background: var(--surface);
   border-radius: 12px;

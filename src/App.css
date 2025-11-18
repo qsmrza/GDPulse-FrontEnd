@@ -7,6 +7,29 @@
 .main-content {
   flex: 1;
   padding: 2rem 0;
+  padding-top: 5.5rem; /* Space for floating logo */
+}
+
+@media (min-width: 1201px) {
+  .main-content .container {
+    margin-left: 300px; /* Space for table of contents on larger screens */
+  }
+}
+
+@media (max-width: 1200px) {
+  .main-content .container {
+    margin-left: 0; /* No TOC on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 4.5rem; /* Less space for smaller logo */
+  }
+  
+  .main-content .container {
+    margin-left: 0;
+  }
 }
 
 /* Loading State */
