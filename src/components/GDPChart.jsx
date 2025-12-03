@@ -43,13 +43,13 @@ const GDPChart = ({ data }) => {
   // Series 2: Model Predictions (Line - dashed) - includes all predictions
   const allPredictions = [
     ...historicalData
-      .filter((item) => item.nowcasting !== undefined)
+      .filter((item) => item.nowcasting !== undefined && item.nowcasting !== null && !isNaN(item.nowcasting))
       .map((item) => ({
         x: item.displayDate || item.date,
         y: toBillions(item.nowcasting),
       })),
     ...predictionData
-      .filter((item) => item.prediction !== undefined)
+      .filter((item) => item.prediction !== undefined && item.prediction !== null && !isNaN(item.prediction))
       .map((item) => ({
         x: item.displayDate || item.date,
         y: toBillions(item.prediction),

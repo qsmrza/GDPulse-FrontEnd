@@ -4,7 +4,6 @@ import MetricCard from './MetricCard';
 import GDPChart from './GDPChart';
 import IndicatorsGrid from './IndicatorsGrid';
 import ModelMetrics from './ModelMetrics';
-import TestApiCall from './TestApiCall';
 import TableOfContents from './TableOfContents';
 import { TrendingUp, Activity, BarChart3, RefreshCw, Globe, LineChart, AlertCircle } from 'lucide-react';
 import {
@@ -251,7 +250,6 @@ const Dashboard = () => {
               <div className="last-updated">
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
-              <TestApiCall />
             </div>
           </div>
         </section>
