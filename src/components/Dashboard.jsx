@@ -158,7 +158,7 @@ const Dashboard = () => {
         <section className="hero-section" id="hero">
           <div className="hero-content">
             <div className="dashboard-header-controls">
-              <h1 className="hero-title">{countryName} - Real-Time GDP Predictions</h1>
+              <h1 className="hero-title">{countryName} - GDP Predictions</h1>
               <div className="country-selector-wrapper">
                 <Globe className="country-selector-icon" size={18} />
                 <select
