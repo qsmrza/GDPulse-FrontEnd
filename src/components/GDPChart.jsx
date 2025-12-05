@@ -1,9 +1,17 @@
 import React from "react";
-import ReactApexChart from "react-apexcharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
 import "./GDPChart.css";
 
 const GDPChart = ({ data }) => {
-  // If data is empty or doesn't have predictions, show placeholder
   if (!data || data.length === 0) {
     return (
       <div className="gdp-chart-container card">
@@ -23,200 +31,41 @@ const GDPChart = ({ data }) => {
     );
   }
 
-  // Prepare data for ApexCharts
-  // Split into historical data and prediction
-  const historicalData = data.filter((item) => item.isHistorical);
-  const predictionData = data.filter((item) => !item.isHistorical);
-
-  // Format data for ApexCharts - combine historical and prediction for continuous lines
-  // Convert to billions and round to whole numbers
-  const toBillions = (value) => Math.round(value);
-
-  // Series 1: Actual GDP (Line) - historical only
-  const actualGdpData = historicalData
-    .filter((item) => item.actual !== undefined && item.actual !== null)
-    .map((item) => ({
-      x: item.displayDate || item.date,
-      y: toBillions(item.actual),
-    }));
-
-  // Series 2: Model Predictions (Line - dashed) - includes all predictions
-  const allPredictions = [
-    ...historicalData
-      .filter((item) => item.nowcasting !== undefined && item.nowcasting !== null && !isNaN(item.nowcasting))
-      .map((item) => ({
-        x: item.displayDate || item.date,
-        y: toBillions(item.nowcasting),
-      })),
-    ...predictionData
-      .filter((item) => item.prediction !== undefined && item.prediction !== null && !isNaN(item.prediction))
-      .map((item) => ({
-        x: item.displayDate || item.date,
-        y: toBillions(item.prediction),
-      }))
-  ];
-
-  // Series 3: Confidence Interval (Range Area) - for all predictions (historical + current)
-  const confidenceIntervalData = [
-    ...historicalData
-      .filter((item) => item.lower !== undefined && item.upper !== undefined)
-      .map((item) => ({
-        x: item.displayDate || item.date,
-        y: [toBillions(item.lower), toBillions(item.upper)],
-      })),
-    ...predictionData
-      .filter((item) => item.lower !== undefined && item.upper !== undefined)
-      .map((item) => ({
-        x: item.displayDate || item.date,
-        y: [toBillions(item.lower), toBillions(item.upper)],
-      }))
-  ];
-
-  const series = [
-    {
-      type: "line",
-      name: "Actual GDP",
-      data: actualGdpData,
-    },
-    {
-      type: "line",
-      name: "Model Predictions",
-      data: allPredictions,
-    },
-    {
-      type: "rangeArea",
-      name: "95% Confidence Interval",
-      data: confidenceIntervalData,
-    },
-  ];
-
-  const options = {
-    chart: {
-      height: 450,
-      type: "rangeArea",
-      animations: {
-        enabled: true,
-        speed: 500,
-      },
-      toolbar: {
-        show: true,
-        tools: {
-          download: true,
-          selection: true,
-          zoom: true,
-          zoomin: true,
-          zoomout: true,
-          pan: true,
-          reset: true,
-        },
-      },
-    },
-    colors: ["#dc2626", "#f59e0b", "#3b82f6"],
-    dataLabels: {
-      enabled: false,
-    },
-    fill: {
-      opacity: [1, 1, 0.15],
-    },
-    stroke: {
-      curve: "straight",
-      width: [3, 2, 0],
-      dashArray: [0, 5, 0],
-    },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "center",
-      fontSize: "13px",
-      markers: {
-        width: 12,
-        height: 12,
-      },
-      itemMargin: {
-        horizontal: 10,
-        vertical: 5,
-      },
-    },
-    title: {
-      text: "GDP Nowcasting: Predictions vs Actual",
-      align: "left",
-      style: {
-        fontSize: "18px",
-        fontWeight: "600",
-        color: "var(--text-primary)",
-      },
-    },
-    xaxis: {
-      type: "category",
-      labels: {
-        rotate: -45,
-        rotateAlways: true,
-        style: {
-          fontSize: "11px",
-        },
-      },
-      title: {
-        text: "Date",
-        style: {
-          fontSize: "12px",
-          fontWeight: "500",
-        },
-      },
-    },
-    yaxis: {
-      title: {
-        text: "GDP (Billions USD)",
-        style: {
-          fontSize: "12px",
-          fontWeight: "500",
-        },
-      },
-      labels: {
-        formatter: function (value) {
-          return value ? `$${Math.round(value)}B` : "";
-        },
-        style: {
-          fontSize: "11px",
-        },
-      },
-    },
-    tooltip: {
-      shared: false,
-      intersect: true,
-      y: {
-        formatter: function (value, { seriesIndex, dataPointIndex, w }) {
-          if (seriesIndex === 3) {
-            // Confidence interval (rangeArea)
-            return `$${Math.round(value)}B`;
-          }
-          // Regular lines
-          return value ? `$${Math.round(value)}B` : "";
-        },
-      },
-    },
-    markers: {
-      size: [6, 6, 0],  // Show markers on actual and predictions
-      strokeWidth: [2, 2, 0],
-      strokeColors: ["#fff", "#fff", "#fff"],
-      hover: {
-        sizeOffset: 3,
-      },
-    },
-    grid: {
-      borderColor: "var(--border-color)",
-      strokeDashArray: 3,
-      xaxis: {
-        lines: {
-          show: true,
-        },
-      },
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
-    },
+  // Custom tooltip to show formatted values
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        >
+          <p style={{ margin: "0 0 8px 0", fontWeight: "600", color: "#333" }}>
+            {data.quarter || data.displayDate}
+          </p>
+          {data.actual !== undefined && data.actual !== null && (
+            <p style={{ margin: "4px 0", color: "#dc2626", fontSize: "14px" }}>
+              <strong>Actual GDP:</strong> {data.actual.toFixed(2)}%
+            </p>
+          )}
+          {data.predicted !== undefined && data.predicted !== null && (
+            <p style={{ margin: "4px 0", color: "#f59e0b", fontSize: "14px" }}>
+              <strong>Predicted:</strong> {data.predicted.toFixed(2)}%
+            </p>
+          )}
+        </div>
+      );
+    }
+    return null;
   };
+
+  // Format Y-axis labels
+  const formatYAxis = (value) => `${value.toFixed(1)}%`;
 
   return (
     <div className="gdp-chart-container card">
@@ -224,27 +73,65 @@ const GDPChart = ({ data }) => {
         <h2 className="chart-title">GDP Predictions vs Historical Data</h2>
       </div>
 
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="rangeArea"
-        height={450}
-      />
-
-      <div className="chart-info">
-        <p
-          style={{
-            fontSize: "0.875rem",
-            color: "var(--text-secondary)",
-            marginTop: "1rem",
-            padding: "0 1rem",
-          }}
+      <ResponsiveContainer width="100%" height={450}>
+        <LineChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
         >
-          <strong>Red solid line</strong> shows actual GDP growth from historical data.{" "}
-          <strong>Orange dashed line</strong> shows the model's predictions across all time periods.{" "}
-          <strong>Shaded blue area</strong> represents the 95% confidence interval for all predictions.
-        </p>
-      </div>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis
+            dataKey="quarter"
+            angle={-45}
+            textAnchor="end"
+            height={80}
+            style={{ fontSize: "12px" }}
+            tick={{ fill: "#6b7280" }}
+          />
+          <YAxis
+            tickFormatter={formatYAxis}
+            style={{ fontSize: "12px" }}
+            tick={{ fill: "#6b7280" }}
+            label={{
+              value: "GDP Growth Rate (%)",
+              angle: -90,
+              position: "insideLeft",
+              style: { fontSize: "14px", fontWeight: "500", fill: "#374151" },
+            }}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend
+            verticalAlign="top"
+            height={36}
+            iconType="line"
+            wrapperStyle={{ paddingBottom: "10px" }}
+          />
+
+          {/* Actual GDP Line */}
+          <Line
+            type="monotone"
+            dataKey="actual"
+            stroke="#dc2626"
+            strokeWidth={3}
+            dot={{ fill: "#dc2626", r: 5 }}
+            activeDot={{ r: 7 }}
+            name="Actual GDP"
+            connectNulls={false}
+          />
+
+          {/* Predicted GDP Line */}
+          <Line
+            type="monotone"
+            dataKey="predicted"
+            stroke="#f59e0b"
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={{ fill: "#f59e0b", r: 4 }}
+            activeDot={{ r: 6 }}
+            name="Model Predictions"
+            connectNulls={true}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 };

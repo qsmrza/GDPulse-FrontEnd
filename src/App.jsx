@@ -1,27 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import FloatingLogo from './components/FloatingLogo';
-import PredictionCard from './components/PredictionCard';
-import GDPChart from './components/GDPChart';
-import IndicatorsGrid from './components/IndicatorsGrid';
-import ModelMetrics from './components/ModelMetrics';
-import Footer from './components/Footer';
-import Home from './components/Home';
-import Dashboard from './components/Dashboard';
-import TestApiCall from './components/TestApiCall'
-import { Activity, RefreshCw, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import FloatingLogo from "./components/FloatingLogo";
+import PredictionCard from "./components/PredictionCard";
+import GDPChart from "./components/GDPChart";
+import IndicatorsGrid from "./components/IndicatorsGrid";
+import ModelMetrics from "./components/ModelMetrics";
+import Footer from "./components/Footer";
+import Home from "./components/Home";
+import Dashboard from "./components/Dashboard";
+import { Activity, RefreshCw, AlertCircle } from "lucide-react";
 import {
   getAllPredictions,
   transformPredictionsToChartData,
   checkHealth,
-  getHistoricalData
-} from './services/apiService';
+  getHistoricalData,
+} from "./services/apiService";
 import {
   getEconomicIndicators,
   getFeatureImportance,
-  getModelMetrics
-} from './services/mockData';
-import './App.css';
+  getModelMetrics,
+} from "./services/mockData";
+import "./App.css";
 
 function App() {
   return (
@@ -40,4 +44,3 @@ function App() {
 }
 
 export default App;
-

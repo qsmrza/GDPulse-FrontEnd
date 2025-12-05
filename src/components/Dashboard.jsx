@@ -2,20 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MetricCard from './MetricCard';
 import GDPChart from './GDPChart';
-import IndicatorsGrid from './IndicatorsGrid';
-import ModelMetrics from './ModelMetrics';
+import ModelRankings from './ModelRankings';
 import TableOfContents from './TableOfContents';
 import { TrendingUp, Activity, BarChart3, RefreshCw, Globe, LineChart, AlertCircle } from 'lucide-react';
 import {
-  getGDPHistoricalData,
-  getCurrentPrediction,
-  getEconomicIndicators,
-  getFeatureImportance,
-  getModelMetrics
-} from '../services/mockData';
-import {
-  getPrediction,
-  getHistoricalData
+  getResults,
+  transformResultsToChartData,
+  getAllModelsResults
 } from '../services/apiService';
 import '../App.css';
 import './Dashboard.css';
@@ -38,29 +31,28 @@ const AVAILABLE_MODELS = [
     horizon: 'h0 (nowcast)'
   },
   {
-    id: 'forecasting_h1',
+    id: 'forecasting_q1',
     name: 'Forecast (1 Quarter Ahead)',
     description: '1-quarter ahead forecast',
     horizon: 'h1 (1-step)'
   },
   {
-    id: 'forecasting_h2',
+    id: 'forecasting_q2',
     name: 'Forecast (2 Quarters Ahead)',
     description: '2-quarters ahead forecast',
     horizon: 'h2 (2-step)'
   },
   {
-    id: 'forecasting_h3',
+    id: 'forecasting_q3',
     name: 'Forecast (3 Quarters Ahead)',
     description: '3-quarters ahead forecast',
     horizon: 'h3 (3-step)'
   },
   {
-    id: 'forecasting_h4',
+    id: 'forecasting_q4',
     name: 'Forecast (4 Quarters Ahead)',
-    description: '4-quarters ahead forecast (Coming Soon)',
-    horizon: 'h4 (4-step)',
-    disabled: true
+    description: '4-quarters ahead forecast',
+    horizon: 'h4 (4-step)'
   }
 ];
 
@@ -68,13 +60,9 @@ const Dashboard = () => {
   const { countryCode } = useParams();
   const navigate = useNavigate();
   const [gdpData, setGdpData] = useState([]);
-  const [currentPrediction, setCurrentPrediction] = useState(null);
   const [selectedModel, setSelectedModel] = useState('nowcasting');
-  const [predictionData, setPredictionData] = useState(null);
-  const [historicalData, setHistoricalData] = useState([]);
-  const [indicators, setIndicators] = useState([]);
-  const [featureImportance, setFeatureImportance] = useState([]);
-  const [modelMetrics, setModelMetrics] = useState(null);
+  const [resultsData, setResultsData] = useState(null);
+  const [allModelsData, setAllModelsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -109,22 +97,17 @@ const Dashboard = () => {
     setError(null);
 
     try {
-      // Fetch prediction for selected model and country
-      const prediction = await getPrediction(apiCountryCode, selectedModel);
-      setPredictionData(prediction);
+      // Fetch pre-computed results for selected model and country
+      const results = await getResults(apiCountryCode, selectedModel);
+      setResultsData(results);
 
-      // Fetch historical data for the model and country
-      const history = await getHistoricalData(apiCountryCode, selectedModel, 4);
-      setHistoricalData(history.historical_data || []);
-
-      // Still using mock data for other sections
-      setIndicators(getEconomicIndicators());
-      setFeatureImportance(getFeatureImportance());
-      setModelMetrics(getModelMetrics());
-
-      // Build chart data combining historical + prediction
-      const chartData = buildChartData(history.historical_data || [], prediction);
+      // Transform results to chart format
+      const chartData = transformResultsToChartData(results);
       setGdpData(chartData);
+
+      // Fetch all models' performance data
+      const allModels = await getAllModelsResults(apiCountryCode, selectedModel);
+      setAllModelsData(allModels);
 
       setLastUpdated(new Date());
     } catch (err) {
@@ -133,53 +116,6 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Helper function to convert date to quarterly format
-  const getQuarterLabel = (dateStr) => {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const quarter = Math.floor(month / 3) + 1;
-    return `${year} Q${quarter}`;
-  };
-
-  const buildChartData = (historical, prediction) => {
-    // Show more quarters for nowcasting to see historical performance
-    const quartersToShow = selectedModel === 'nowcasting' ? 12 : 5;
-    const recentHistorical = historical.slice(-quartersToShow);
-
-    // Transform historical data with quarterly labels and confidence bands
-    const histData = recentHistorical.map((item) => ({
-      date: item.date,
-      displayDate: getQuarterLabel(item.date),
-      actual: item.actual_gdp,
-      nowcasting: item.gdp, // Model's historical prediction
-      lower: item.lower_bound,
-      upper: item.upper_bound,
-      isHistorical: true
-    }));
-
-    // For nowcasting, add current quarter prediction
-    // For forecasts, add future prediction
-    const isNowcast = selectedModel === 'nowcasting';
-    const currentDate = new Date();
-    const predictionQuarter = Math.floor(currentDate.getMonth() / 3) + 1;
-    const predictionYear = currentDate.getFullYear();
-    const predictionLabel = `${predictionYear} Q${predictionQuarter}`;
-
-    // Add current prediction as future point
-    const predData = {
-      date: prediction.date,
-      displayDate: predictionLabel,
-      prediction: prediction.prediction,
-      lower: prediction.confidence_interval.lower,
-      upper: prediction.confidence_interval.upper,
-      modelName: AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name,
-      isHistorical: false
-    };
-
-    return [...histData, predData];
   };
 
   const handleRefresh = () => {
@@ -239,8 +175,8 @@ const Dashboard = () => {
               </div>
             </div>
             <p className="hero-description">
-              {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.description} -
-              Machine learning predictions using Ridge regression on Federal Reserve indicators
+              {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.description}
+              {resultsData && ` - Using ${resultsData.best_model} model`}
             </p>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={handleRefresh}>
@@ -271,21 +207,19 @@ const Dashboard = () => {
                 {AVAILABLE_MODELS.map((model) => (
                   <button
                     key={model.id}
-                    onClick={() => !model.disabled && setSelectedModel(model.id)}
-                    disabled={model.disabled}
+                    onClick={() => setSelectedModel(model.id)}
                     className={selectedModel === model.id ? 'btn btn-primary' : 'btn btn-secondary'}
                     style={{
                       padding: '0.75rem 1.5rem',
                       fontSize: '0.9rem',
                       border: selectedModel === model.id ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-                      backgroundColor: model.disabled ? '#f3f4f6' : (selectedModel === model.id ? 'var(--primary-color)' : 'transparent'),
-                      color: model.disabled ? '#9ca3af' : (selectedModel === model.id ? 'white' : 'var(--text-primary)'),
-                      cursor: model.disabled ? 'not-allowed' : 'pointer',
+                      backgroundColor: selectedModel === model.id ? 'var(--primary-color)' : 'transparent',
+                      color: selectedModel === model.id ? 'white' : 'var(--text-primary)',
+                      cursor: 'pointer',
                       borderRadius: '8px',
-                      transition: 'all 0.2s ease',
-                      opacity: model.disabled ? 0.6 : 1
+                      transition: 'all 0.2s ease'
                     }}
-                    title={model.disabled ? 'Coming Soon' : model.description}
+                    title={model.description}
                   >
                     {model.name}
                   </button>
@@ -303,17 +237,14 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Economic Indicators */}
-        <section id="indicators">
-          <IndicatorsGrid indicators={indicators} />
-        </section>
-
-        {/* Model Performance */}
+        {/* Model Rankings and Performance */}
         <section id="model-performance">
-          <ModelMetrics 
-            metrics={modelMetrics} 
-            featureImportance={featureImportance} 
-          />
+          {allModelsData && allModelsData.models && (
+            <ModelRankings
+              models={allModelsData.models}
+              modelType={selectedModel}
+            />
+          )}
         </section>
       </div>
     </main>

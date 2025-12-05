@@ -1,0 +1,231 @@
+.model-rankings-section {
+  margin-top: 3rem;
+}
+
+.section-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+/* Rankings Table */
+.rankings-table-wrapper {
+  padding: 0;
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 100px 1fr 130px 130px 130px 130px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.header-cell {
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.header-cell:nth-child(2) {
+  text-align: left;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 130px 130px 130px 130px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+  align-items: center;
+  min-height: 60px;
+}
+
+.table-row:hover {
+  background-color: var(--bg-secondary);
+}
+
+.table-row.top-performer {
+  background: linear-gradient(to right, rgba(255, 215, 0, 0.05), transparent);
+}
+
+.table-row.top-performer:hover {
+  background: linear-gradient(to right, rgba(255, 215, 0, 0.1), var(--bg-secondary));
+}
+
+.table-cell {
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.rank-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.model-cell {
+  text-align: left;
+}
+
+.model-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.metric-cell {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.9rem;
+}
+
+.metric-positive {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.metric-negative {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+/* Charts Grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.chart-card {
+  padding: 1.5rem;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.chart-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+/* Ensemble Weights */
+.ensemble-weights {
+  padding: 1.5rem;
+}
+
+.weights-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.weight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.weight-bar-container {
+  width: 100%;
+  height: 32px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.weight-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.weight-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.weight-model-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.weight-value {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 80px 1fr 110px 110px 110px 110px;
+  }
+
+  .header-cell,
+  .table-cell {
+    padding: 0.875rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 70px 1fr 90px 90px 90px 90px;
+  }
+
+  .header-cell,
+  .table-cell {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 60px 1.2fr 80px 80px 80px;
+  }
+
+  .header-cell:last-child,
+  .table-cell:last-child {
+    display: none;
+  }
+
+  .header-cell,
+  .table-cell {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+}

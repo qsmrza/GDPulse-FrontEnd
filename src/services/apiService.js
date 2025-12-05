@@ -5,19 +5,41 @@
  * Connects directly to HuggingFace Space API.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://koan39-gdpulse.hf.space";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+/**
+ * Get pre-computed results for a country and model type
+ * @param {string} country - Country code (usa, canada, uk, germany, france, italy, japan)
+ * @param {string} modelType - Model type (nowcasting, forecasting_q1, forecasting_q2, forecasting_q3, forecasting_q4)
+ */
+export const getResults = async (country, modelType) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/results/${country}/${modelType}`);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching results for ${country} ${modelType}:`, error);
+    throw error;
+  }
+};
 
 /**
  * Fetch predictions from all 4 models at once for a specific country
+ * DEPRECATED: Use getResults() instead for pre-computed results
  * @param {string} country - Country code (usa, canada, uk, germany, france, italy, japan)
  */
 export const getAllPredictions = async (country = "usa") => {
   try {
     const modelNames = [
       "nowcasting",
-      "forecasting_h1",
-      "forecasting_h2",
-      "forecasting_h3"
+      "forecasting_q1",
+      "forecasting_q2",
+      "forecasting_q3"
     ];
 
     // Fetch predictions from all models in parallel
@@ -51,6 +73,7 @@ export const getAllPredictions = async (country = "usa") => {
 
 /**
  * Fetch prediction for a specific model and country
+ * DEPRECATED: Use getResults() instead for pre-computed results
  * @param {string} country - Country code (usa, canada, uk, germany, france, italy, japan)
  * @param {string} modelType - Model type (nowcasting, forecasting_h1, forecasting_h2, forecasting_h3, forecasting_h4)
  * @param {Array<number>} features - Optional array of feature values
@@ -102,9 +125,10 @@ export const checkHealth = async () => {
 
 /**
  * Get historical GDP data for a country and model
+ * DEPRECATED: Use getResults() instead for pre-computed results
  * @param {string} country - Country code (usa, canada, uk, germany, france, italy, japan)
  * @param {string} modelType - Model type (nowcasting, forecasting_h1, forecasting_h2, forecasting_h3)
- * @param {number} quarters - Number of quarters to retrieve (default 4)
+ * @param {number} quarters - Number of quarters to return (default 4)
  */
 export const getHistoricalData = async (country, modelType, quarters = 4) => {
   try {
@@ -178,4 +202,47 @@ export const transformPredictionsToChartData = (allPredictions) => {
       cached: pred.cached,
     };
   });
+};
+
+/**
+ * Transform results API response to chart format for Recharts
+ * @param {Object} resultsData - Response from getResults() endpoint
+ * @returns {Array} Array of data points formatted for Recharts
+ */
+export const transformResultsToChartData = (resultsData) => {
+  if (!resultsData || !resultsData.data) {
+    return [];
+  }
+
+  return resultsData.data.map(item => ({
+    quarter: item.quarter,
+    date: item.date,
+    actual: item.actual,
+    predicted: item.predicted,
+    lower_80: item.lower_80,
+    upper_80: item.upper_80,
+    lower_95: item.lower_95,
+    upper_95: item.upper_95,
+  }));
+};
+
+/**
+ * Get all models' performance for a country and model type
+ * @param {string} country - Country code (usa, canada, uk, germany, france, italy, japan)
+ * @param {string} modelType - Model type (nowcasting, forecasting_q1, forecasting_q2, forecasting_q3, forecasting_q4)
+ */
+export const getAllModelsResults = async (country, modelType) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/results/${country}/${modelType}/all-models`);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching all models results for ${country} ${modelType}:`, error);
+    throw error;
+  }
 };
