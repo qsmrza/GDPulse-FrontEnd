@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MetricCard from './MetricCard';
 import GDPChart from './GDPChart';
 import ModelRankings from './ModelRankings';
-import TableOfContents from './TableOfContents';
 import { TrendingUp, Activity, BarChart3, RefreshCw, Globe, LineChart, AlertCircle } from 'lucide-react';
 import {
   getResults,
@@ -152,7 +151,6 @@ const Dashboard = () => {
 
   return (
     <main className="main-content">
-      <TableOfContents />
       <div className="container">
         {/* Hero Section */}
         <section className="hero-section" id="hero">

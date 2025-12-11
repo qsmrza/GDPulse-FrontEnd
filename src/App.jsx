@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import FloatingLogo from "./components/FloatingLogo";
+import ScrollToTop from "./components/ScrollToTop";
 import PredictionCard from "./components/PredictionCard";
 import GDPChart from "./components/GDPChart";
 import IndicatorsGrid from "./components/IndicatorsGrid";
@@ -32,6 +33,7 @@ function App() {
     <Router>
       <div className="app">
         <FloatingLogo />
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard/:countryCode" element={<Dashboard />} />
